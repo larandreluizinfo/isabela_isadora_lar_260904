@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stranger Things - A Jornada da Eleven</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0b0507;
+    color: #f2e9e0;
+    font-family: 'VT323', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  #bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(229, 9, 20, .25), transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(120, 0, 10, .4), transparent 55%),
+      #0b0507;
+    transition: filter 1.2s ease;
+  }
+
+  body.upside #bg {
+    filter: hue-rotate(140deg) saturate(1.4) brightness(.8);
+    background:
+      radial-gradient(circle at 30% 30%, rgba(150, 0, 130, .35), transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(40, 0, 60, .6), transparent 55%),
+      #07020a;
+  }
+  body.upside #flicker { opacity: .35; }
+  body.upside #storyBox {
+    border-color: rgba(150, 60, 200, .7);
+    box-shadow: inset 0 0 40px rgba(70, 0, 90, .6), 0 0 30px rgba(120, 0, 160, .25);
+  }
+  body.upside h2 { color: #a55fe5; }
+  body.upside button { border-color: #a55fe5; background: rgba(140, 40, 200, .12); }
+  body.upside button:hover:not(:disabled) { background: #a55fe5; box-shadow: 0 0 26px rgba(160,80,240,.8); }
+
+  #flicker {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.12) 0 2px, transparent 2px 4px);
+    animation: flick 4s infinite;
+  }
+  @keyframes flick { 0%,100%{opacity:.7} 50%{opacity:.95} }
+
+  #app {
+    width: min(860px, 94vw);
+    margin: 24px auto;
+    padding: 24px;
+    text-align: center;
+  }
+
+  /* ---------- TITLE ---------- */
+  #title {
+    padding: 30px 6px;
+    animation: fadeIn 1s ease;
+  }
+  .logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(26px, 7vw, 58px);
+    color: #e50914;
+    letter-spacing: 4px;
+    text-shadow: 3px 3px 0 #fff, -3px -3px 0 #000, 0 0 40px rgba(229,9,20,.9);
+    animation: blinkTitle 2.6s infinite;
+  }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes blinkTitle { 0%,88%,100%{opacity:1} 90%,94%{opacity:.35} 96%{opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+  @keyframes rise { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
+
+  .subtitle {
+    font-size: clamp(22px, 4.5vw, 34px);
+    color: #c9c2ba;
+    margin-top: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 3vw, 22px);
+    color: #e50914;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 #000;
+  }
+
+  /* ---------- UI ELEMENTS ---------- */
+  button {
+    cursor: pointer;
+    border: 2px solid #e50914;
+    background: rgba(229, 9, 20, .12);
+    color: #f2e9e0;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(11px, 2.4vw, 15px);
+    padding: 14px 22px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all .18s ease;
+  }
+  button:hover:not(:disabled) {
+    background: #e50914;
+    color: #fff;
+    box-shadow: 0 0 26px rgba(229,9,20,.8);
+    transform: scale(1.05);
+  }
+  button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    border-color: #555;
+  }
+  button.small { font-family: 'VT323', monospace; font-size: 20px; padding: 8px 16px; }
+
+  #storyBox {
+    background: rgba(20, 8, 12, .9);
+    border: 1px solid rgba(229, 9, 20, .55);
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin: 18px 0;
+    text-align: left;
+    font-size: clamp(20px, 3.2vw, 26px);
+    line-height: 1.45;
+    box-shadow: inset 0 0 40px rgba(120,0,10,.35), 0 0 30px rgba(229,9,20,.15);
+    white-space: pre-wrap;
+    animation: rise .5s ease both;
+  }
+
+  #choices {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 20px auto 0;
+    max-width: 520px;
+    animation: rise .6s .1s ease both;
+  }
+
+  .hidden { display: none !important; }
+
+  #hpRow {
+    display: flex;
+    justify-content: space-around;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+  }
+  .barWrap { width: 200px; }
+  .bar {
+    height: 18px;
+    border: 2px solid #c9c2ba;
+    border-radius: 3px;
+    background: #1c0e12;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .bar.fill {
+    height: 100%;
+    background: linear-gradient(90deg, #e50914, #ff5a33);
+    transition: width .4s ease;
+  }
+  .bar.fill.enemy { background: linear-gradient(90deg, #6b6, #8f8); }
+  .npcs { font-family: 'VT323', monospace; font-size: 22px; color: #c9c2ba; margin-top: 8px; line-height: 1.5; }
+
+  #log {
+    min-height: 150px;
+    max-height: 240px;
+    overflow: auto;
+    font-size: 22px;
+    text-align: left;
+    padding: 12px;
+    border: 1px dashed rgba(229,9,20,.5);
+    border-radius: 6px;
+    background: #12080c;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  #log div { animation: fadeIn .35s ease; }
+
+  .credits {
+    margin-top: 34px;
+    color: #8a8178;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .d20 {
+    display: inline-block;
+    width: 46px;
+    height: 46px;
+    line-height: 46px;
+    text-align: center;
+    background: #000;
+    color: #fff;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="flicker"></div>
+
+<div id="app">
+
+  <!-- TELA INICIAL -->
+  <div id="title">
+    <div class="logo">STRANGER<br>THINGS</div>
+    <div class="subtitle">A Jornada da Eleven</div>
+    <div style="margin-top:40px">
+      <button id="btnStart">INICIAR JOGO</button>
+    </div>
+    <div class="credits">Uma aventura de D&D · 1ª Temporada</div>
+  </div>
+
+  <!-- JOGO -->
+  <div id="game" class="hidden">
+    <h2 id="chapter">Capítulo</h2>
+
+    <div id="ui" class="hidden">
+      <div id="hpRow">
+        <div class="barWrap">
+          <div style="color:#c33">🐉 Você (Eleven & Cia.)</div>
+          <div class="bar"><div id="playerBar" class="fill" style="width:100%"></div></div>
+          <div id="playerHp" style="margin-top:4px"></div>
+        </div>
+        <div class="barWrap">
+          <div style="color:#6c6">MONSTRO</div>
+          <div class="bar"><div id="enemyBar" class="fill enemy" style="width:100%"></div></div>
+          <div id="enemyHp" style="margin-top:4px"></div>
+        </div>
+      </div>
+
+      <div class="npcs" id="npcStatus">Aliados</div>
+
+      <div id="engineLog"></div>
+      <div id="log" class="hidden"></div>
+      <div id="battleChoices"></div>
+    </div>
+
+    <div id="storyBox" class="hidden"></div>
+    <div id="choices"></div>
+  </div>
+
+</div>
+
+<script>
+'use strict';
+
+/* ================= ESTADO ================= */
+const S = {
+  speed: 18,
+  turn: 0,
+  bossHp: 60,
+  bossMax: 60,
+  playerHp: 42,
+  playerMax: 42,
+  guard: false,
+  partyHp: 30,
+  partyMax: 30,
+  defending: false,
+  flameCd: 0,
+  udBossHp: 72,
+  udBossMax: 72,
+  udHp: 45,
+  udMax: 45,
+  udGuard: false,
+  udFocus: 2,
+  chars: ['Mike (Dragão Vermelho)', 'Will (Mago)', 'Max (Princesa)', 'Dustin (Sábio)', 'Lucas (Guerreiro)', 'Eleven (Garota Incrível)'],
+  room: 'title',
+  flagFlame: false,
+  logVisible: false
+};
+
+const $ = id => document.getElementById(id);
+
+/* ================= TELA INICIAL ================= */
+$('btnStart').addEventListener('click', () => {
+  $('title').classList.add('hidden');
+  $('game').classList.remove('hidden');
+  S.speed = Math.min(100, Math.max(1, prompt('Velocidade do texto (1 a 100, padrão 18)?', '18') || 18));
+  showRoom('schoolIntro');
+});
+
+/* ================= NARRADOR ================= */
+let typingTimer = null, typeIndex = 0, currentFull = '';
+
+function typeText(id, text, done) {
+  const el = $(id);
+  el.classList.remove('hidden');
+  el.innerHTML = '';
+  currentFull = text;
+  typeIndex = 0;
+  clearInterval(typingTimer);
+  el.style.opacity = '1';
+
+  const step = () => {
+    typeIndex += 3;
+    el.innerHTML = esc(currentFull.slice(0, typeIndex));
+    if (typeIndex >= currentFull.length) {
+      clearInterval(typingTimer);
+      setTimeout(done, 250);
+    }
+  };
+  typingTimer = setInterval(step, S.speed);
+  step();
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ================= CENAS ================= */
+const scenes = {
+  schoolIntro: {
+    chapter: 'Capítulo 1 · A Escola de Hawkins',
+    text: '1983. Escola de Hawkins, Indiana.\n\nManhã de aula. Dustin, Lucas, Will, Mike e Max atravessam os corredores de mochila nas costas. Ao lado deles, uma garota de peruca loira finge ser alguém normal... é a ELEVEN, escondida do laboratório.\n\n"Fica de boa, Onze. Ninguém vai te reconhecer com essa peruca."',
+    npcs: 'Dustin · Lucas · Will · Mike · Max · Eleven',
+    party: false,
+    choices: [
+      { text: '📚 Ir para a sala de aula', next: 'classroom', msg: '' }
+    ]
+  },
+
+  classroom: {
+    chapter: 'Capítulo 1 · A Escola de Hawkins',
+    text: 'Na sala, todos fingem estudar. Eleven com a peruca loira senta quieta, só de cabeça baixa.\n\nDe repente, a porta se abre com um baque: é TROY, o valentão da escola. Ele aponta para Mike:\n\n"E aí, seu fracote? Vai chorar de novo pro seu amiguinho?"\n\nEle empurra Mike contra a mesa. A sala inteira fica em silêncio.',
+    npcs: 'Troy: "Vem cá, otário!"',
+    party: false,
+    choices: [
+      { text: '👊 Mike revida', next: 'bully_fight', msg: 'Mike empurra Troy de volta...' },
+      { text: '😱 Proteger a Eleven', next: 'bully_protect', msg: 'Mike fica na frente da Eleven...' }
+    ]
+  },
+
+  bully_fight: {
+    chapter: 'Capítulo 1 · A Escola de Hawkins',
+    text: 'Mike avança, mas Troy é maior e mais rápido. Ele levanta o punho para acertar Mike.\n\nNo fundo da sala, algo treme. Os copos racham. As luzes piscam.\n\nEleven se levanta lentamente, trazendo a peruca caída em uma das mãos. Seu rosto não tem medo. Tem fúria.',
+    npcs: 'Eleven: "Ele não é ruim."',
+    party: false,
+    choices: [
+      { text: '🌀 Usar os poderes!', next: 'powers', msg: 'O nariz de Eleven sangra levemente. A energia se acumula...' }
+    ]
+  },
+
+  bully_protect: {
+    chapter: 'Capítulo 1 · A Escola de Hawkins',
+    text: 'Troy dá um passo e tropeça, como se algo invisível tivesse segurado seu pé. Ele olha para trás, furioso.\n\nEleven está de pé, a peruca na mão. O valentão nunca deveria ter encostado em Mike.',
+    npcs: 'Eleven: "Vão embora."',
+    party: false,
+    choices: [
+      { text: '🌀 Usar os poderes!', next: 'powers', msg: 'O ar ao redor de Eleven começa a vibrar...' }
+    ]
+  },
+
+  powers: {
+    chapter: 'Capítulo 1 · A Escola de Hawkins',
+    text: 'Eleven estende a mão. O corpo de Troy levita no ar, flutuando como uma boneca de pano. Ele grita, pede calma, chora.\n\nCom um movimentozinho de dedos, Eleven o arremessa pela janela. Troy voa, voa, voa... e cai na quadra de terra, a metros dos portões.\n\nO corredor fica em silêncio absoluto. Max pisca:\n\n"...Isso foi TÃO legal."',
+    npcs: 'Fim da aula. Troy: DERROTADO.',
+    party: false,
+    choices: [
+      { text: '🏠 Ir à casa do Mike jogar D&D', next: 'mikeHome', msg: 'A turma toda sai correndo antes que mais alguém veja...' }
+    ]
+  },
+
+  mikeHome: {
+    chapter: 'Capítulo 2 · A Mesa de D&D',
+    text: 'Na casa do Mike, no porão. O tapete guarda cheiro de pizza. No centro, uma mesa coberta de mapa, dados e miniaturas.\n\nUma luz de abajur ilumina a mesa. Mike abre o Livro do Jogador e sorri:\n\n"Hoje a gente vai salvar o Reino de Alderac."\n\nCada um escolhe seu personagem: Mike empunha o DRAGÃO VERMELHO, Will é o MAGO, Max a PRINCESA, Lucas o GUERREIRO, Dustin o SÁBIO. E sobram as miniaturas...',
+    npcs: 'Todos olham para você. 🎲',
+    party: false,
+    choices: [
+      { text: '🐉 Pegar o DRAGÃOZINHO', next: 'characterPick', msg: 'Você segura a miniaturinha de dragão azul. Ela parece... leve demais. Viva demais.' }
+    ]
+  },
+
+  characterPick: {
+    chapter: 'Capítulo 2 · A Mesa de D&D',
+    text: 'Você coloca a miniatura de DRAGÃOZINHO no tabuleiro. A ficha na sua frente diz: Nível 1 · Dragãozinho Azul · Ataque +3 · Fogo da Coragem.\n\nWill apaga as luzes e acende velas. O mapa vira um reino.\n\n"Sua missão: atravessar a Floresta Sombria e impedir que o DEMOGORGON acorde e devaste o mundo."\n\nA pergunta surge na mesa: quem vai SOBREVIVER?',
+    npcs: 'Eleven, no canto da sala, acompanha tudo com os olhos fixos. Ela nunca viu um jogo assim.',
+    party: true,
+    choices: [
+      { text: '🎲 Rolar iniciativa e começar!', next: 'battle', msg: 'Os dados rolam. A batalha começa.' }
+    ]
+  },
+
+  win: {
+    chapter: 'Capítulo 3 · O Mundo Invertido',
+    text: 'O DEMOGORGON desmorona com um rugido que sacode o porão. O tabuleiro treme; uma vela cai. Por um segundo, as sombras parecem... reais.\n\nNa mesa, todos respiram aliviados. Mike declara:\n\n"O Reino de Alderac foi salvo!"\n\nMas Will está pálido, olhando para a parede. Um som vindo da rua: algo rasteja. Cerejeiras se torcem. Uma garoa escura caí do teto do porão.\n\nA parede começa a grudar. E Will... Will some dentro de uma fresta negra na parede.\n\n"ELE LEVOU O WILL!"',
+    npcs: 'Demogorgon: DERROTADO no jogo. Mas algo REAL veio buscar Will.',
+    party: false,
+    choices: [
+      { text: '🌀 Seguir para o Mundo Invertido', next: 'upsideIntro', msg: 'A barreira entre mundos estala... Eleven sabe o caminho.' }
+    ]
+  },
+
+  upsideIntro: {
+    chapter: 'Capítulo 3 · O Mundo Invertido',
+    text: 'O Mundo Invertido se abre como um espelho quebrado.\n\nNão é mais um jogo. É DENTRO da casa, do outro lado: tudo é a casa do Will, mas consumida por gosma, névoa e cinzas flutuando. Um céu permanente de trovoada vermelha. Está tudo frio e morto.\n\nTodos recuam — menos ELEVEN. Ela olha para a fresta de luz que pulsa entre o porão e a parede gosmenta.\n\nMike segura o ombro dela. Eleven pisca e responde, com a voz mole da fadiga:\n\n"Eu vou buscar o Will."',
+    npcs: 'Eleven: "Fiquem aqui. Ouçam o rádio."',
+    party: false,
+    choices: [
+      { text: '🌫️ Entrar no Mundo Invertido', next: 'upsideExplore', msg: 'A gosma engole a silhueta de Eleven...' }
+    ]
+  },
+
+  upsideExplore: {
+    chapter: 'Capítulo 3 · O Mundo Invertido',
+    text: 'Eleven atravessa a névoa viva. O quintal de Hawkins ficou cinza, a cerca coberta de teia, o céu esticado em roxo. Cinzas caem como neve escura.\n\nRastros de gosma levam à garagem do Will. Do lado de dentro do mundo morto, ela ouve uma batida que o grupo tanto reconhece: WILL, atrás da porta, seguro, mas preso.\n\nDe repente, o ar se rasga. O DEMOGORGON REAL — o monstro da entrada secreta da escola — rasteja pelo molde, pronto para proteger a presa.\n\nSó a Eleven pode vencer. E ela está exausta do café da manhã? Não importa. A garota incrível ergue a mão.',
+    npcs: 'Demogorgon REAL: 72 HP. Eleven: sozinha.',
+    party: false,
+    choices: [
+      { text: '⚔️ Enfrentar o Demogorgon', next: 'upsideBattle', msg: 'Duas sombras se encaram no coração do Mundo Invertido.' }
+    ]
+  },
+
+  upsideWin: {
+    chapter: 'Capítulo 3 · O Mundo Invertido',
+    text: 'A Eleven cai de joelhos, o nariz sangrando. O Demogorgon real se desfaz em cinzas que o vento roxo leva embora.\n\nA porta da garagem range. DO OUTRO LADO ela não está mais vendo a garagem morta — ela vê a luz do porão. Will sai correndo, abraça Eleven, e os dois atravessam a fresta juntos, no mesmo instante em que o grupo os puxa pela corda.\n\nNo porão, TV ligada, pizzas intactas, ninguém ferido. O mundo está salvo. Por enquanto.',
+    npcs: 'Will: RESGATADO. Mundo Invertido: SELADO.',
+    party: false,
+    choices: [
+      { text: '🛏️ Festa do pijama na casa do Will', next: 'sleepover', msg: 'Desta vez, a noite pode ser só deles.' }
+    ]
+  },
+
+  sleepover: {
+    chapter: 'Capítulo 4 · Festa do Pijama',
+    text: 'Na casa do Will, sacos de dormir no chão, uma TV de tubo passando um filme de monstro, pizza e refrigerante.\n\nMike e Will discutem quem chegou primeiro. Dustin inventa uma história absurda. Max conta que Troy fugiu de Hawkins.\n\nEleven tira a peruca, enrola-se no cobertor e, pela primeira vez, sorri de verdade.\n\n"Eu nunca tive amigos antes."',
+    npcs: 'Todos: "Agora você tem, Onze."',
+    party: false,
+    choices: [
+      { text: '🌌 Terminar a 1ª Temporada', next: 'ending', msg: 'A luz da lâmpada oscila... e por um instante, no quadro-negro do portão, uma silhueta observa.' }
+    ]
+  },
+
+  ending: {
+    chapter: 'FIM · Temporada 1',
+    text: 'A câmera sobe devagar sobre Hawkins.\n\nA manhã acorda. A escola está cheia novamente. No porão do Mike, as miniaturas de D&D seguem sobre a mesa.\n\nE no limiar da luz, a Entorpecida... não. A GAROTA INCRÍVEL, a Eleven, guarda sua peruca na mochila.\n\n"CONTINUA... continua na Temporada 2."',
+    npcs: 'Obrigado por jogar, aventureiro.',
+    party: false,
+    choices: [
+      { text: '↩️ Jogar novamente', next: 'restart', msg: '' }
+    ]
+  }
+};
+
+/* ================= COMBATE ================= */
+const B = {
+  enemyActions: []
+};
+
+function showRoom(key) {
+  clearInterval(typingTimer);
+  $('log').classList.add('hidden');
+  $('battleChoices').classList.add('hidden');
+  $('npcStatus').classList.add('hidden');
+  if (key === 'restart') {
+    location.reload();
+    return;
+  }
+
+  if (key === 'upsideBattle' || key === 'upsideIntro' || key === 'upsideExplore') {
+    document.body.classList.add('upside');
+  } else {
+    document.body.classList.remove('upside');
+  }
+
+  if (key === 'battle') {
+    S.playerHp = S.playerMax;
+    S.bossHp = S.bossMax;
+    S.guard = false;
+    S.flameCd = 0;
+    S.turn = 1;
+    renderBars();
+    fillAllyList();
+    $('chapter').textContent = 'Capítulo 2 · A Batalha de Alderac';
+    $('log').classList.remove('hidden');
+    $('battleChoices').classList.remove('hidden');
+    $('npcStatus').classList.remove('hidden');
+    $('storyBox').classList.add('hidden');
+    S.logVisible = true;
+    addLog('⚔️ Um rugido rasga a Floresta Sombria. O DEMOGORGON surge diante de vocês!');
+    addLog('🐉 Dragãozinho protege a festa. Seus aliados lutam ao seu lado.');
+    renderActions();
+    return;
+  }
+
+  if (key === 'upsideBattle') {
+    S.udHp = S.udMax;
+    S.udBossHp = S.udBossMax;
+    S.udGuard = false;
+    S.udFocus = 2;
+    renderUD();
+    $('chapter').textContent = 'Capítulo 3 · Batalha no Mundo Invertido';
+    $('log').classList.remove('hidden');
+    $('battleChoices').classList.remove('hidden');
+    $('npcStatus').classList.remove('hidden');
+    $('npcStatus').textContent = '🌑 Mundo Invertido · Eleven enfrenta o Demogorgon REAL';
+    $('storyBox').classList.add('hidden');
+    addLog('👁️ O ar se rasga. O DEMOGORGON REAL abre as mandíbulas diante da Eleven.');
+    addLog('🦸 Eleven: "Solte o Will. AGORA."');
+    renderUDActions();
+    return;
+  }
+
+  const sc = scenes[key];
+  if (!sc) return;
+  S.logVisible = false;
+  $('chapter').textContent = sc.chapter;
+  $('choices').classList.add('hidden');
+
+  if (sc.npcs) {
+    $('npcStatus').classList.remove('hidden');
+    $('npcStatus').textContent = '🎭 ' + sc.npcs;
+  } else {
+    $('npcStatus').classList.add('hidden');
+  }
+
+  if (sc.party) {
+    fillAllyList();
+    $('npcStatus').classList.remove('hidden');
+  }
+
+  $('battleChoices').classList.add('hidden');
+  $('log').classList.add('hidden');
+
+  typeText('storyBox', sc.text, () => {
+    if (sc.choices && sc.choices.length) {
+      renderChoices(sc.choices);
+    } else {
+      $('choices').classList.add('hidden');
+    }
+  });
+}
+
+function renderChoices(ch) {
+  const box = $('choices');
+  box.innerHTML = '';
+  box.classList.remove('hidden');
+  ch.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.textContent = c.text;
+    b.onclick = () => {
+      if (c.msg) {
+        addLog(c.msg, false);
+      }
+      box.classList.add('hidden');
+      showRoom(c.next);
+    };
+    box.appendChild(b);
+  });
+}
+
+/* ================= BARRAS / ALIADOS ================= */
+function fillAllyList() {
+  const el = $('npcStatus');
+  el.textContent = 'Aliados: ' + S.chars.join(' · ');
+}
+
+function renderBars() {
+  const pp = Math.max(0, Math.round(S.playerHp / S.playerMax * 100));
+  $('playerBar').style.width = pp + '%';
+  $('playerHp').textContent = `Time: ${S.playerHp}/${S.playerMax} HP`;
+
+  const bp = Math.max(0, Math.round(S.bossHp / S.bossMax * 100));
+  $('enemyBar').style.width = bp + '%';
+  $('enemyHp').textContent = `Demogorgon: ${S.bossHp}/${S.bossMax} HP`;
+}
+
+function renderUD() {
+  const pp = Math.max(0, Math.round(S.udHp / S.udMax * 100));
+  $('playerBar').style.width = pp + '%';
+  $('playerHp').textContent = `Eleven: ${S.udHp}/${S.udMax} HP`;
+
+  const bp = Math.max(0, Math.round(S.udBossHp / S.udBossMax * 100));
+  $('enemyBar').style.width = bp + '%';
+  $('enemyHp').textContent = `Demogorgon REAL: ${S.udBossHp}/${S.udBossMax} HP`;
+}
+
+function addLog(line, visible = true) {
+  const logEl = $('log');
+  logEl.innerHTML += `<div>${line}</div>`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+/* ================= AÇÕES DE BATALHA ================= */
+function renderActions() {
+  const box = $('battleChoices');
+  box.innerHTML = '';
+  const actions = [
+    { id: 'attack', label: '⚔️ ATACAR' },
+    { id: 'guard', label: '🛡️ DEFENDER' },
+    { id: 'flame', label: '🔥 FOGO DA CORAGEM' }
+  ];
+  actions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.textContent = a.label;
+    btn.id = 'act_' + a.id;
+    if (a.id === 'flame') btn.disabled = S.flameCd > 0;
+    btn.onclick = () => playerAction(a.id);
+    box.appendChild(btn);
+  });
+}
+
+function playerAction(type) {
+  if (S.bossHp <= 0) return;
+
+  if (type === 'attack') {
+    const roll = Math.floor(Math.random() * (S.bossMax + 1)) + 1;
+    addLog(`🎲 Você rola um dado d${S.bossMax}... cai ${roll}!`);
+    if (roll >= S.bossMax - 8) {
+      const dmg = 20 + roll;
+      S.bossHp -= dmg;
+      addLog(`💥 COURO DO DRAGÃO! O DEMOGORGON perde ${dmg} HP!`);
+    } else if (roll === 1) {
+      addLog('💨 Falhou! O ataque erra feio.');
+    } else {
+      const dmg = 12 + roll;
+      S.bossHp -= dmg;
+      addLog(`🐉 Ataque certeiro! O Demogorgon perde ${dmg} HP.`);
+    }
+    renderBars();
+  }
+
+  if (type === 'guard') {
+    S.guard = true;
+    addLog('🛡️ Você ergueu as escamas. O próximo golpe será mais fraco.');
+  }
+
+  if (type === 'flame') {
+    if (S.flameCd > 0) return;
+    const dmg = 16 + Math.floor(Math.random() * 12);
+    S.bossHp -= dmg;
+    S.flameCd = 2;
+    addLog(`🔥 FOGO DA CORAGEM! Chamas azuis varrem o monstro (-${dmg} HP).`);
+    renderBars();
+  }
+
+  checkBossDown();
+  if (S.bossHp <= 0) return;
+
+  allyPhase();
+  if (S.bossHp <= 0) return;
+
+  enemyTurn();
+  renderActions();
+}
+
+function alleleMultiplier() {
+  return 1 + (S.turn > 1 ? (S.turn % 2 === 0 ? 0.2 : 0.1) : 0);
+}
+
+function allyPhase() {
+  addLog('--- Aliados atacam! ---');
+  const allies = S.chars.slice(0, 5);
+  allies.forEach(name => {
+    const roll = Math.floor(Math.random() * 8) + 1;
+    if (roll >= 3) {
+      const dmg = Math.max(2, Math.floor(Math.random() * 9 + 2));
+      S.bossHp -= dmg;
+      addLog(`${name} ataca com sucesso (-${dmg} HP).`);
+    } else {
+      addLog(`${name} errou o ataque!`);
+    }
+  });
+  checkBossDown();
+  renderBars();
+}
+
+function enemyTurn() {
+  if (S.bossHp <= 0) { renderBars(); return; }
+  S.turn++;
+  const roll = Math.floor(Math.random() * S.bossMax) + 1;
+  addLog(`🎲 O DEMOGORGON revida com um d${S.bossMax}... ${roll}!`);
+  S.bossHp = Math.max(0, S.bossHp);
+
+  let dmg;
+  if (roll === S.bossMax) {
+    dmg = 34;
+    addLog('😱 CRÍTICO DO MONSTRO! Golpe devastador!');
+  } else if (roll <= S.bossMax / 3) {
+    dmg = 10 + Math.floor(Math.random() * 8);
+    addLog('🌫️ O lodo sombrio arde...');
+  } else {
+    dmg = 16 + Math.floor(Math.random() * 6);
+    addLog('💢 O monstro avança e ataca o grupo!');
+  }
+
+  if (S.guard) {
+    dmg = Math.round(dmg / 2);
+    addLog('🛡️ Sua defesa reduziu o golpe pela metade!');
+    S.guard = false;
+    if (S.flameCd > 0) S.flameCd--;
+  } else {
+    if (S.flameCd > 0) S.flameCd--;
+  }
+
+  S.playerHp -= dmg;
+  addLog(`💔 O time perde ${dmg} HP (restam ${Math.max(0, S.playerHp)}).`);
+  renderBars();
+
+  if (S.playerHp <= 0) {
+    addLog('💀 O grupo foi derrotado...');
+    setTimeout(() => {
+      const box = $('battleChoices');
+      box.innerHTML = '';
+      box.classList.remove('hidden');
+      const btn = document.createElement('button');
+      btn.textContent = '🔄 TENTAR NOVAMENTE';
+      btn.onclick = () => { showRoom('battle'); };
+      box.appendChild(btn);
+    }, 400);
+  }
+}
+
+function checkBossDown() {
+  if (S.bossHp <= 0) {
+    S.bossHp = 0;
+    renderBars();
+    addLog('💥💥💥 O DEMOGORGON desaba! Flores negras caem do céu sombrio.');
+    setTimeout(() => {
+      $('battleChoices').classList.add('hidden');
+      showRoom('win');
+    }, 1200);
+  }
+}
+
+/* ================= BATALHA NO MUNDO INVERTIDO ================= */
+function renderUDActions() {
+  const box = $('battleChoices');
+  box.innerHTML = '';
+  const actions = [
+    { id: 'udAttack', label: '🔮 PODER TELEQUINÉTICO', disabled: false },
+    { id: 'udFocus', label: '⚡ FOCAR A MENTE (COMBUSTÍVEL)', disabled: S.udFocus <= 0 },
+    { id: 'udGuard', label: '🛡️ DEFENDER-SE', disabled: false }
+  ];
+  actions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.textContent = a.label + (a.id === 'udFocus' ? ` (${S.udFocus})` : '');
+    btn.disabled = a.disabled;
+    btn.onclick = () => udPlayerAction(a.id);
+    box.appendChild(btn);
+  });
+}
+
+function udPlayerAction(type) {
+  if (S.udBossHp <= 0) return;
+
+  if (type === 'udAttack') {
+    const roll = Math.floor(Math.random() * 20) + 1;
+    addLog(`🎲 Eleven foca a mente... dado d20: ${roll}`);
+    if (roll === 1) {
+      addLog('💨 A energia falha! O foco se quebra.');
+      S.udHp -= 6;
+      addLog(`💔 A exaustão cobra: -6 HP (restam ${Math.max(0, S.udHp)}).`);
+      renderUD();
+    } else if (roll >= 17) {
+      const dmg = 18 + Math.floor(Math.random() * 10);
+      S.udBossHp -= dmg;
+      addLog(`💥 EXPLOSÃO PSÍQUICA! O Demogorgon REAL perde ${dmg} HP!`);
+      renderUD();
+    } else if (roll >= 8) {
+      const dmg = 8 + Math.floor(Math.random() * 8);
+      S.udBossHp -= dmg;
+      addLog(`🌀 O poder atinge o monstro: -${dmg} HP.`);
+      renderUD();
+    } else {
+      addLog('🌫️ O monstro desvia da onda psíquica.');
+    }
+  }
+
+  if (type === 'udFocus') {
+    if (S.udFocus <= 0) return;
+    S.udFocus--;
+    const dmg = 20 + Math.floor(Math.random() * 14);
+    S.udBossHp -= dmg;
+    const heal = Math.min(S.udMax, S.udHp + 12);
+    S.udHp = heal;
+    addLog(`⚡ A memória de Mike e Will dá força à Eleven: -${dmg} HP no Demogorgon e +12 de energia.`);
+    renderUD();
+  }
+
+  if (type === 'udGuard') {
+    S.udGuard = true;
+    addLog('🛡️ Eleven ergue uma barreira psíquica.');
+  }
+
+  checkUDDown();
+  if (S.udBossHp <= 0) return;
+
+  udEnemyTurn();
+  renderUDActions();
+}
+
+function udEnemyTurn() {
+  if (S.udBossHp <= 0) { renderUD(); return; }
+  const roll = Math.floor(Math.random() * 20) + 1;
+  addLog(`🎲 O Demogorgon REAL ataca... d20: ${roll}`);
+  let dmg;
+  if (roll === 20) {
+    dmg = 22;
+    addLog('😱 MANDÍBULAS DEVORADORAS!');
+  } else if (roll >= 12) {
+    dmg = 8 + Math.floor(Math.random() * 7);
+    addLog('🐾 Garras do monstro cortam a névoa.');
+  } else {
+    dmg = 4 + Math.floor(Math.random() * 4);
+    addLog('🌑 O monstro avança em silêncio.');
+  }
+  if (S.udGuard) {
+    dmg = Math.max(1, Math.round(dmg / 2));
+    addLog('🛡️ A barreira psíquica absorveu metade do golpe!');
+    S.udGuard = false;
+  }
+  S.udHp -= dmg;
+  addLog(`💔 Eleven perde ${dmg} HP (restam ${Math.max(0, S.udHp)}).`);
+  renderUD();
+
+  if (S.udHp <= 0) {
+    addLog('🕳️ A névoa silencia. A Eleven cai... mas a memória dos amigos acende a luz de volta.');
+    setTimeout(() => {
+      S.udHp = S.udMax;
+      renderUD();
+      const box = $('battleChoices');
+      box.innerHTML = '';
+      box.classList.remove('hidden');
+      const btn = document.createElement('button');
+      btn.textContent = '🔄 RECOMEÇAR A BATALHA';
+      btn.onclick = () => showRoom('upsideBattle');
+      box.appendChild(btn);
+    }, 900);
+  }
+}
+
+function checkUDDown() {
+  if (S.udBossHp <= 0) {
+    S.udBossHp = 0;
+    renderUD();
+    addLog('💥 O Demogorgon REAL explode em cinzas! O Mundo Invertido treme.');
+    setTimeout(() => {
+      $('battleChoices').classList.add('hidden');
+      showRoom('upsideWin');
+    }, 1200);
+  }
+}
+</script>
+</body>
+</html>
