@@ -284,6 +284,12 @@ const S = {
   udMax: 45,
   udGuard: false,
   udFocus: 2,
+  vHp: 110,
+  vMax: 110,
+  vElevenHp: 50,
+  vElevenMax: 50,
+  vGuard: false,
+  vMusic: 3,
   chars: ['Mike (Dragão Vermelho)', 'Will (Mago)', 'Max (Princesa)', 'Dustin (Sábio)', 'Lucas (Guerreiro)', 'Eleven (Garota Incrível)'],
   room: 'title',
   flagFlame: false,
@@ -433,11 +439,31 @@ const scenes = {
 
   upsideWin: {
     chapter: 'Capítulo 3 · O Mundo Invertido',
-    text: 'A Eleven cai de joelhos, o nariz sangrando. O Demogorgon real se desfaz em cinzas que o vento roxo leva embora.\n\nA porta da garagem range. DO OUTRO LADO ela não está mais vendo a garagem morta — ela vê a luz do porão. Will sai correndo, abraça Eleven, e os dois atravessam a fresta juntos, no mesmo instante em que o grupo os puxa pela corda.\n\nNo porão, TV ligada, pizzas intactas, ninguém ferido. O mundo está salvo. Por enquanto.',
-    npcs: 'Will: RESGATADO. Mundo Invertido: SELADO.',
+    text: 'A Eleven cai de joelhos, o nariz sangrando. O Demogorgon real se desfaz em cinzas que o vento roxo leva embora.\n\nA porta da garagem range. DO OUTRO LADO ela não está mais vendo a garagem morta — ela vê a luz do porão. Will sai correndo, abraça Eleven, e os dois atravessam a fresta juntos, no mesmo instante em que o grupo os puxa pela corda.\n\nNo porão, TV ligada, pizzas intactas, ninguém ferido. O mundo está salvo. Por enquanto.\n\nDe repente, as luzes piscam. Uma voz velha e seca sobe das sombras do teto, vinda de lugar nenhum e de todos os lugares:\n\n"Pequena menina. Você abre os portões... e acha que pode fechá-los?"\n\nA névoa se recolhe. No coração do Mundo Invertido, um trono de raízes. E nele: VECNA, o mestre das mentes.',
+    npcs: 'VECNA: "Você não pode me derrotar, Eleven."',
     party: false,
     choices: [
-      { text: '🛏️ Festa do pijama na casa do Will', next: 'sleepover', msg: 'Desta vez, a noite pode ser só deles.' }
+      { text: '🔥 Enfrentar o Vecna de verdade', next: 'vecnaIntro', msg: 'Cinzas e relâmpagos vermelhos cortam o céu do Mundo Invertido...' }
+    ]
+  },
+
+  vecnaIntro: {
+    chapter: 'Capítulo 4 · A Batalha Contra Vecna',
+    text: 'O teto do porão se rasga. Eleven é puxada de volta ao Mundo Invertido — mas agora ela está em um salão seco, cheio de gosma podre e já quebrada. O CREEL HOUSE, a casa amaldiçoada de Hawkins.\n\nNa metade da escada, VECNA espera. Não é um monstro do jogo. É o mago, o algoz, a mente que controla as sombras.\n\nEle levanta a mão — e a própria Eleven sente o peso do seu corpo aprisionado, os olhos revirando, o medo subindo pela garganta.\n\nMike, na rua, grita o nome dela pelo rádio. A música toca. E a garota incrível decide: HOJE NÃO.',
+    npcs: 'Vecna: 110 HP · Eleven: determinada.',
+    party: false,
+    choices: [
+      { text: '🎵 A música toca: lutar', next: 'vecnaBattle', msg: '"Running Up That Hill" esquenta o ar. Eleven fecha os punhos.' }
+    ]
+  },
+
+  vecnaWin: {
+    chapter: 'Capítulo 4 · A Batalha Contra Vecna',
+    text: 'O colapso chega do próprio Mundo Invertido. Vecna grita uma nota aguda de vidro se espatifando, seu corpo se quebrando em espirais de brasa.\n\nEleven cai de joelhos pela última vez naquela noite. O nariz sangra, o corpo treme. Do porão, quatro pares de mãos a puxam para a luz da casa do Will.\n\nO quadro negro da sala da escola apaga. As luzes de Hawkins voltam. O Mundo Invertido cala.\n\nWill abraça Eleven. Mike segura a mão dela. E pela primeira vez, a Eleven dorme sabendo que o vilão... caiu na primeira temporada.',
+    npcs: 'VECNA: DERROTADO. Mundo salvo.',
+    party: false,
+    choices: [
+      { text: '🛏️ Festa do pijama na casa do Will', next: 'sleepover', msg: 'Depois de salvar o mundo? Pizza, cobertores e amigos.' }
     ]
   },
 
@@ -453,7 +479,7 @@ const scenes = {
 
   ending: {
     chapter: 'FIM · Temporada 1',
-    text: 'A câmera sobe devagar sobre Hawkins.\n\nA manhã acorda. A escola está cheia novamente. No porão do Mike, as miniaturas de D&D seguem sobre a mesa.\n\nE no limiar da luz, a Entorpecida... não. A GAROTA INCRÍVEL, a Eleven, guarda sua peruca na mochila.\n\n"CONTINUA... continua na Temporada 2."',
+    text: 'A câmera sobe devagar sobre Hawkins.\n\nA manhã acorda. A escola está cheia novamente. No porão do Mike, as miniaturas de D&D seguem sobre a mesa — e a ficha do VECNA, que quase venceu, está rasgada.\n\nE no limiar da luz, a GAROTA INCRÍVEL, a Eleven, guarda sua peruca na mochila.\n\n"CONTINUA... continua na Temporada 2."',
     npcs: 'Obrigado por jogar, aventureiro.',
     party: false,
     choices: [
@@ -477,7 +503,7 @@ function showRoom(key) {
     return;
   }
 
-  if (key === 'upsideBattle' || key === 'upsideIntro' || key === 'upsideExplore') {
+  if (key === 'upsideBattle' || key === 'upsideIntro' || key === 'upsideExplore' || key === 'vecnaIntro' || key === 'vecnaBattle') {
     document.body.classList.add('upside');
   } else {
     document.body.classList.remove('upside');
@@ -518,6 +544,25 @@ function showRoom(key) {
     addLog('👁️ O ar se rasga. O DEMOGORGON REAL abre as mandíbulas diante da Eleven.');
     addLog('🦸 Eleven: "Solte o Will. AGORA."');
     renderUDActions();
+    return;
+  }
+
+  if (key === 'vecnaBattle') {
+    S.vHp = S.vMax;
+    S.vElevenHp = S.vElevenMax;
+    S.vGuard = false;
+    S.vMusic = 3;
+    renderVecna();
+    $('chapter').textContent = 'Capítulo 4 · A Batalha Contra Vecna';
+    $('log').classList.remove('hidden');
+    $('battleChoices').classList.remove('hidden');
+    $('npcStatus').classList.remove('hidden');
+    $('npcStatus').textContent = '☠️ Vecna · a mente que governa as sombras';
+    $('storyBox').classList.add('hidden');
+    addLog('🧙 VECNA ergue a mão e o tempo para. A Creel House range.');
+    addLog('🎵 Do rádio de Max, uma música toca forte: "Running Up That Hill".');
+    addLog('🦸 Eleven: "Você não leva mais ninguém, Vecna."');
+    renderVecnaActions();
     return;
   }
 
@@ -593,6 +638,16 @@ function renderUD() {
   const bp = Math.max(0, Math.round(S.udBossHp / S.udBossMax * 100));
   $('enemyBar').style.width = bp + '%';
   $('enemyHp').textContent = `Demogorgon REAL: ${S.udBossHp}/${S.udBossMax} HP`;
+}
+
+function renderVecna() {
+  const pp = Math.max(0, Math.round(S.vElevenHp / S.vElevenMax * 100));
+  $('playerBar').style.width = pp + '%';
+  $('playerHp').textContent = `Eleven: ${S.vElevenHp}/${S.vElevenMax} HP`;
+
+  const bp = Math.max(0, Math.round(S.vHp / S.vMax * 100));
+  $('enemyBar').style.width = bp + '%';
+  $('enemyHp').textContent = `Vecna: ${S.vHp}/${S.vMax} HP`;
 }
 
 function addLog(line, visible = true) {
@@ -858,6 +913,125 @@ function checkUDDown() {
     setTimeout(() => {
       $('battleChoices').classList.add('hidden');
       showRoom('upsideWin');
+    }, 1200);
+  }
+}
+
+/* ================= BATALHA CONTRA VECNA ================= */
+function renderVecnaActions() {
+  const box = $('battleChoices');
+  box.innerHTML = '';
+  const actions = [
+    { id: 'vNerve', label: '🧠 DETECTAR A MENTE DE VECNA', disabled: false },
+    { id: 'vMusic', label: '🎵 FORÇA DA MÚSICA', disabled: S.vMusic <= 0 },
+    { id: 'vGuard', label: '🛡️ RESISTIR À MALDIÇÃO', disabled: false }
+  ];
+  actions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.textContent = a.label + (a.id === 'vMusic' ? ` (${S.vMusic})` : '');
+    btn.disabled = a.disabled;
+    btn.onclick = () => vecnaAction(a.id);
+    box.appendChild(btn);
+  });
+}
+
+function vecnaAction(type) {
+  if (S.vHp <= 0) return;
+
+  if (type === 'vNerve') {
+    const roll = Math.floor(Math.random() * 20) + 1;
+    addLog(`🎲 Eleven mergulha na mente de Vecna... d20: ${roll}`);
+    if (roll === 1) {
+      addLog('💀 Vecna inverte o ataque mental! A maldição retorna.');
+      S.vElevenHp -= 8;
+      addLog(`💔 Eleven perde 8 HP (restam ${Math.max(0, S.vElevenHp)}).`);
+      renderVecna();
+    } else if (roll >= 18) {
+      const dmg = 20 + Math.floor(Math.random() * 12);
+      S.vHp -= dmg;
+      addLog(`💥 VOCÊ ACESSA O SEGREDO DELE! A mente de Vecna racha: -${dmg} HP!`);
+      renderVecna();
+    } else if (roll >= 9) {
+      const dmg = 9 + Math.floor(Math.random() * 9);
+      S.vHp -= dmg;
+      addLog(`🌀 A telecinese arranca o sigilo de Vecna: -${dmg} HP.`);
+      renderVecna();
+    } else {
+      addLog('🌫️ A mente de Vecna é um labirinto. O ataque mal arranha.');
+    }
+  }
+
+  if (type === 'vMusic') {
+    if (S.vMusic <= 0) return;
+    S.vMusic--;
+    const dmg = 18 + Math.floor(Math.random() * 12);
+    S.vHp -= dmg;
+    const heal = Math.min(S.vElevenMax, S.vElevenHp + 15);
+    S.vElevenHp = heal;
+    addLog(`🎵 A música dos amigos ergue a Eleven: -${dmg} HP no Vecna e +15 de esperança.`);
+    renderVecna();
+  }
+
+  if (type === 'vGuard') {
+    S.vGuard = true;
+    addLog('🛡️ Eleven planta os pés e resiste à maldição.');
+  }
+
+  checkVecnaDown();
+  if (S.vHp <= 0) return;
+
+  vecnaTurn();
+  renderVecnaActions();
+}
+
+function vecnaTurn() {
+  if (S.vHp <= 0) { renderVecna(); return; }
+  const roll = Math.floor(Math.random() * 20) + 1;
+  addLog(`🎲 Vecna canaliza a maldição... d20: ${roll}`);
+  let dmg;
+  if (roll === 20) {
+    dmg = 24;
+    addLog('😱 A VOZ DE VECNA AGARRA O CÉU!');
+  } else if (roll >= 13) {
+    dmg = 9 + Math.floor(Math.random() * 8);
+    addLog('🕸️ A maldição das sombras aperta o peito da Eleven.');
+  } else {
+    dmg = 5 + Math.floor(Math.random() * 4);
+    addLog('🌑 Um sussurro frio passa pelos corredores.');
+  }
+  if (S.vGuard) {
+    dmg = Math.max(1, Math.round(dmg / 2));
+    addLog('🛡️ A resistência da Eleven segura metade da maldição!');
+    S.vGuard = false;
+  }
+  S.vElevenHp -= dmg;
+  addLog(`💔 Eleven perde ${dmg} HP (restam ${Math.max(0, S.vElevenHp)}).`);
+  renderVecna();
+
+  if (S.vElevenHp <= 0) {
+    addLog('🕳️ O corpo de Eleven paira, os olhos reviram... mas a voz de Mike atravessa o silêncio: "ELEVEN!"');
+    setTimeout(() => {
+      S.vElevenHp = S.vElevenMax;
+      renderVecna();
+      const box = $('battleChoices');
+      box.innerHTML = '';
+      box.classList.remove('hidden');
+      const btn = document.createElement('button');
+      btn.textContent = '🔄 RESPIRAR E VOLTAR AO COMBATE';
+      btn.onclick = () => showRoom('vecnaBattle');
+      box.appendChild(btn);
+    }, 900);
+  }
+}
+
+function checkVecnaDown() {
+  if (S.vHp <= 0) {
+    S.vHp = 0;
+    renderVecna();
+    addLog('🔥 O trono de raízes queima. VECNA GRITA o próprio fim.');
+    setTimeout(() => {
+      $('battleChoices').classList.add('hidden');
+      showRoom('vecnaWin');
     }, 1200);
   }
 }
