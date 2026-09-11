@@ -515,6 +515,8 @@ function showRoom(key) {
     S.guard = false;
     S.flameCd = 0;
     S.turn = 1;
+    $('ui').classList.remove('hidden');
+    $('log').innerHTML = '';
     renderBars();
     fillAllyList();
     $('chapter').textContent = 'Capítulo 2 · A Batalha de Alderac';
@@ -534,6 +536,8 @@ function showRoom(key) {
     S.udBossHp = S.udBossMax;
     S.udGuard = false;
     S.udFocus = 2;
+    $('ui').classList.remove('hidden');
+    $('log').innerHTML = '';
     renderUD();
     $('chapter').textContent = 'Capítulo 3 · Batalha no Mundo Invertido';
     $('log').classList.remove('hidden');
@@ -552,6 +556,8 @@ function showRoom(key) {
     S.vElevenHp = S.vElevenMax;
     S.vGuard = false;
     S.vMusic = 3;
+    $('ui').classList.remove('hidden');
+    $('log').innerHTML = '';
     renderVecna();
     $('chapter').textContent = 'Capítulo 4 · A Batalha Contra Vecna';
     $('log').classList.remove('hidden');
@@ -569,6 +575,7 @@ function showRoom(key) {
   const sc = scenes[key];
   if (!sc) return;
   S.logVisible = false;
+  $('ui').classList.add('hidden');
   $('chapter').textContent = sc.chapter;
   $('choices').classList.add('hidden');
 
@@ -679,7 +686,7 @@ function playerAction(type) {
   if (S.bossHp <= 0) return;
 
   if (type === 'attack') {
-    const roll = Math.floor(Math.random() * (S.bossMax + 1)) + 1;
+    const roll = Math.floor(Math.random() * S.bossMax) + 1;
     addLog(`🎲 Você rola um dado d${S.bossMax}... cai ${roll}!`);
     if (roll >= S.bossMax - 8) {
       const dmg = 20 + roll;
